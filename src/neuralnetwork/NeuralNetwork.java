@@ -27,6 +27,8 @@ public class NeuralNetwork {
         {
             System.out.println(ex.toString());
         }
+        
+        System.out.println("HELLO");
     }
     
 }
