@@ -40,10 +40,18 @@ public class Neurone {
         inputValue += input;
     }
     
+    public void removeInputs()
+    {
+        inputValue = 0;
+    }
+    
     /**
      * Calculer la valeur de l'output
+     * 
+     * @return La valeur resultante de la neuronne
      */
-    public void computes() {
+    public double computes() {
         output = 1 / (1 + Math.exp(-inputValue));
+        return output;
     }
 }

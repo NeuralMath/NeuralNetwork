@@ -11,7 +11,7 @@ public class Reseau {
     private final double[][][] weights;
     private final Neurone[][] reseau = 
     {
-        new Neurone[4],
+        new Neurone[9],
         new Neurone[3],
         new Neurone[2]
     };
@@ -71,6 +71,12 @@ public class Reseau {
             reseau[0][i].addInputs(input[i]);
     }
     
+    public void removeAllInputs()
+    {
+        for(int i = 0 ; i < reseau[0].length; i++)
+            reseau[0][i].removeInputs();
+    }
+    
     /**
      * Exectuer le réseau de neurones
      * 
@@ -82,50 +88,57 @@ public class Reseau {
         
         //Exécuter les neurones du premier étage et passer les valeurs à l'autre couche
         for(int i = 0; i < reseau[0].length; i++)
-        {
-            reseau[0][i].computes();
             for(int j = 0; j < reseau[1].length; j++)
-            {
-                reseau[1][j].addInputs(reseau[0][i].getOutput()*weights[0][i][j]);
-            }
-        }
+                reseau[1][j].addInputs(reseau[0][i].computes()*weights[0][i][j]);
         
         //Exécuter les neurones du deuxième étage et passer les valeurs à l'autre couche
         for(int i = 0; i < reseau[1].length; i++)
-        {
-            reseau[1][i].computes();
             for(int j = 0; j < reseau[2].length; j++)
-            {
-                reseau[2][j].addInputs(reseau[1][i].getOutput()*weights[1][i][j]);
-            }
-        }
+                reseau[2][j].addInputs(reseau[1][i].computes()*weights[1][i][j]);
         
         //Exécuter les neurones du dernier étage
-        for(int i = 0; i < reseau[2].length; i++)
-            reseau[2][i].computes();
+        //for(int i = 0; i < reseau[2].length; i++)
+          //  reseau[2][i].computes();
         
         //Trouver la position de la plus grande valeur d'output
         for(int i = 0; i < reseau[2].length; i++)
-            if(reseau[2][i].getOutput() > reseau[2][posMax].getOutput())
+            if(reseau[2][i].computes() > reseau[2][posMax].computes())
                 posMax = i;
         
         return posMax;
     }
     
-    public void backProgression()
+    public void train(double[][] trainingSet, double[] resultat)
     {
+        double[][] resluts = new double[trainingSet.length][];
+        double trainingRate = 0.001;
+        double somme = 0;
+        
         // new     old
         //w    = w     −η⋅∑j=1M[(yj−tj)⋅yj(1−yj)⋅w′ij]⋅hi(1−hi)⋅xk
         // ki      ki
         
-        for(int i = 0; i < weights.length; i++)
+        removeAllInputs();
+        
+        for(int i = 0; i < trainingSet[0].length; i++)
+            setInputs(trainingSet[0]);
+        computes();
+        
+        for(int k = 0; k < reseau[0].length; k++)
         {
-            for(int j = 0; j < weights[i].length; j++)
+            double valInput = reseau[0][k].getOutput();
+            
+            for(int i = 0; i < reseau[1].length; i++)
             {
-                for(int k = 0; k < weights[i][j].length; k++)
+                double valHidden = reseau[1][i].getOutput();
+                
+                for(int j = 0; j < reseau[2].length; j++)
                 {
-                    
+                    double valOut = reseau[2][j].getOutput();
+
+                    somme += ((valOut - resultat[j]) * valOut * (1 - valOut) * weights[1][i][j]) * valHidden * (1 - valHidden) * valInput;
                 }
+                weights[0][k][i] -= trainingRate * somme;
             }
         }
     }
