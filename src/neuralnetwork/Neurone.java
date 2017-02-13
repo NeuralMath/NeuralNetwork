@@ -40,6 +40,9 @@ public class Neurone {
         inputValue += input;
     }
     
+    /**
+     * Reset l'input de la neuronne
+     */
     public void removeInputs()
     {
         inputValue = 0;

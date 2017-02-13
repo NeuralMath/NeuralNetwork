@@ -15,6 +15,7 @@ public class Reseau {
         new Neurone[3],
         new Neurone[2]
     };
+    private double trainingRate = 0.001;
 
     /**
      * Constructeur du réseau, création des neurones
@@ -43,15 +44,9 @@ public class Reseau {
         weights = weightsTemp;
         
         //Création des neuronnes
-        for(int i = 0; i < reseau.length; i++)
-        {
-            for(int j = 0; j < reseau[i].length; j++)
-            {
-                //Creation des neurones d'entrée donc sans weight
-                if(i == 0)
-                    reseau[i][j] = new Neurone(j);
-                else
-                    reseau[i][j] = new Neurone(j);
+        for (Neurone[] reseau1 : reseau) {
+            for (int j = 0; j < reseau1.length; j++) {
+                reseau1[j] = new Neurone(j);
             }
         }
     }
@@ -110,20 +105,33 @@ public class Reseau {
     
     public void train(double[][] trainingSet, double[] resultat)
     {
-        double[][] resluts = new double[trainingSet.length][];
-        double trainingRate = 0.001;
-        double somme = 0;
-        
-        // new     old
-        //w    = w     −η⋅∑j=1M[(yj−tj)⋅yj(1−yj)⋅w′ij]⋅hi(1−hi)⋅xk
-        // ki      ki
-        
         removeAllInputs();
         
         for(int i = 0; i < trainingSet[0].length; i++)
             setInputs(trainingSet[0]);
+        
         computes();
         
+        SGDHiddenToOutput(resultat);
+        SGDInputToHidden(resultat);
+    }
+    
+    public void SGDHiddenToOutput(double[] resultat)
+    {
+        for(int j = 0; j < reseau[1].length; j++)
+        {
+            for(int i = 0; i < reseau[2].length; i++)
+            {
+                double valeurNeuroneOutput = reseau[2][i].getOutput();
+                double valeurNeuroneHidden = reseau[1][j].getOutput();
+                weights[1][j][i] -= trainingRate * (valeurNeuroneOutput - resultat[i]) * valeurNeuroneOutput * (1 - valeurNeuroneOutput) * valeurNeuroneHidden;
+            }
+        }
+    }
+    
+    public void SGDInputToHidden(double[] resultat)
+    {
+        double somme = 0;
         for(int k = 0; k < reseau[0].length; k++)
         {
             double valInput = reseau[0][k].getOutput();
