@@ -29,13 +29,13 @@ public class Reseau {
             throw new IllegalArgumentException("Le tableau de weight a pas la bonne grandeur par rapport au nombre de layer");
         else
         {
-            for(int i = 1; i < reseau.length; i++)
+            for(int i = 0; i < reseau.length-1; i++)
             {
-                if(weightsTemp[i-1].length != reseau[i].length)
+                if(weightsTemp[i].length != reseau[i].length)
                     throw new IllegalArgumentException("Le tableau de weight a pas la bonne grandeur par rapport au nombre de neurones dans le layer " + i);
                 
-                for(int j = 0; j < reseau[i].length; j++)
-                    if(weightsTemp[i-1][j].length != reseau[i-1].length)
+                for(int j = 1; j < reseau[i].length; j++)
+                    if(weightsTemp[i][j].length != reseau[i+1].length)
                         throw new IllegalArgumentException("Le tableau de weight a pas la bonne grandeur par rapport au nombre de liaisons de la neurone " + j + " dans le entre le layer " + (i-1) + " et " + i);
             }
         }
@@ -51,7 +51,7 @@ public class Reseau {
                 if(i == 0)
                     reseau[i][j] = new Neurone(j);
                 else
-                    reseau[i][j] = new Neurone(j, weights[i-1][j]);
+                    reseau[i][j] = new Neurone(j);
             }
         }
     }
@@ -68,7 +68,7 @@ public class Reseau {
             throw new IllegalArgumentException("Pas la bonne longueur de data");
         
         for(int i = 0 ; i < input.length; i++)
-            reseau[0][i].addInputs(input[i], 0);
+            reseau[0][i].addInputs(input[i]);
     }
     
     /**
@@ -86,7 +86,7 @@ public class Reseau {
             reseau[0][i].computes();
             for(int j = 0; j < reseau[1].length; j++)
             {
-                reseau[1][j].addInputs(reseau[0][i].getOutput(), i);
+                reseau[1][j].addInputs(reseau[0][i].getOutput()*weights[0][i][j]);
             }
         }
         
@@ -96,7 +96,7 @@ public class Reseau {
             reseau[1][i].computes();
             for(int j = 0; j < reseau[2].length; j++)
             {
-                reseau[2][j].addInputs(reseau[1][i].getOutput(), i);
+                reseau[2][j].addInputs(reseau[1][i].getOutput()*weights[1][i][j]);
             }
         }
         
@@ -110,5 +110,23 @@ public class Reseau {
                 posMax = i;
         
         return posMax;
+    }
+    
+    public void backProgression()
+    {
+        // new     old
+        //w    = w     −η⋅∑j=1M[(yj−tj)⋅yj(1−yj)⋅w′ij]⋅hi(1−hi)⋅xk
+        // ki      ki
+        
+        for(int i = 0; i < weights.length; i++)
+        {
+            for(int j = 0; j < weights[i].length; j++)
+            {
+                for(int k = 0; k < weights[i][j].length; k++)
+                {
+                    
+                }
+            }
+        }
     }
 }

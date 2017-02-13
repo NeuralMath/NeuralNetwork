@@ -11,7 +11,6 @@ public class Neurone {
     private double inputValue = 0;
     private double output;
     private final int position;
-    private final double[] weights;
     
     /**
      * Constructeur pour les neurones sans weight (input layer)
@@ -20,18 +19,6 @@ public class Neurone {
      */
     public Neurone(int pos) {
         position = pos;
-        weights = null;
-    }
-    
-    /**
-     * Constructeur pour les neurones avec weight (input layer)
-     * 
-     * @param pos       Position de la neurone dans le layer quel appartient
-     * @param weight    Tableau des weights de toutes les liaisons en amont de la neurone
-     */
-    public Neurone(int pos, double[] weight) {
-        position = pos;
-        weights = weight;
     }
 
     /**
@@ -47,20 +34,16 @@ public class Neurone {
      * Ajouté un input à la neurone
      * 
      * @param input     La valeur de l'input
-     * @param index     L'index de la neurone qui envoie ce input pour trouver le weight
      */
-    public void addInputs(double input, int index)
+    public void addInputs(double input)
     {
-        if(weights == null)
-            inputValue += input;
-        else
-            inputValue += weights[index] * input;
+        inputValue += input;
     }
     
     /**
      * Calculer la valeur de l'output
      */
     public void computes() {
-        output = 1 / (1 + Math.exp(inputValue));
+        output = 1 / (1 + Math.exp(-inputValue));
     }
 }
