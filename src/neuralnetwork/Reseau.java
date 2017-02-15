@@ -8,47 +8,40 @@ package neuralnetwork;
  */
 public class Reseau {
     
-    private final double[][][] weights;
-    private final Neurone[][] reseau = 
-    {
-        new Neurone[9],
-        new Neurone[3],
-        new Neurone[2]
-    };
-    private double trainingRate = 0.001;
+    private final double[][] weightsItoH;
+    private final double[][] weightsHtoO;
+    private final Neurone[][] reseau;
+    private double trainingRate;
 
     /**
      * Constructeur du réseau, création des neurones
      * 
-     * @param weightsTemp                   Le tableau des weight des liaison entre les neurones
+     * @param weightsItoHTemp                   Le tableau des weight des liaison l'input layer et le hidden
+     * @param weightsHtoOTemp                   Le tableau des weight des liaison le hidden layer et le output
+     * @param inputLayer                        Nombre de neurons dans la première couche
+     * @param hiddenLayer                       Nombre de neurons dans la deuxième couche
+     * @param outputLayer                       Nombre de neurons dans la troisième couche     
+     * @param training                          Vitesse de l'apprentisage
      * @throws IllegalArgumentException     Si le tableau de weight n'a pas les bonne grandeur
      */
-    public Reseau(double[][][] weightsTemp) throws IllegalArgumentException{
+    public Reseau(int inputLayer, int hiddenLayer, int outputLayer, double training, double[][] weightsItoHTemp, double[][] weightsHtoOTemp)
+    {
+        weightsItoH = weightsItoHTemp;
+        weightsHtoO = weightsHtoOTemp;
+        trainingRate = training;
         
-        //Vérification pour la grandeur en toutes les dimensions du tableau de wieght
-        if(weightsTemp.length != reseau.length-1)
-            throw new IllegalArgumentException("Le tableau de weight a pas la bonne grandeur par rapport au nombre de layer");
-        else
-        {
-            for(int i = 0; i < reseau.length-1; i++)
-            {
-                if(weightsTemp[i].length != reseau[i].length)
-                    throw new IllegalArgumentException("Le tableau de weight a pas la bonne grandeur par rapport au nombre de neurones dans le layer " + i);
-                
-                for(int j = 1; j < reseau[i].length; j++)
-                    if(weightsTemp[i][j].length != reseau[i+1].length)
-                        throw new IllegalArgumentException("Le tableau de weight a pas la bonne grandeur par rapport au nombre de liaisons de la neurone " + j + " dans le entre le layer " + (i-1) + " et " + i);
-            }
-        }
-                    
-        weights = weightsTemp;
+        //Création de la premièr dimmension
+        reseau = new Neurone[][] 
+                {
+                    new Neurone[inputLayer],
+                    new Neurone[hiddenLayer],
+                    new Neurone[outputLayer]
+                };
         
         //Création des neuronnes
-        for (Neurone[] reseau1 : reseau) {
-            for (int j = 0; j < reseau1.length; j++) {
-                reseau1[j] = new Neurone(j);
-            }
-        }
+        for (Neurone[] list : reseau)
+            for (int j = 0; j < list.length; j++)
+                list[j] = new Neurone(j);
     }
     
     /**
@@ -66,6 +59,9 @@ public class Reseau {
             reseau[0][i].addInputs(input[i]);
     }
     
+    /**
+     * Éfface les inputs de l'étage d'éentrée
+     */
     public void removeAllInputs()
     {
         for(int i = 0 ; i < reseau[0].length; i++)
@@ -84,69 +80,101 @@ public class Reseau {
         //Exécuter les neurones du premier étage et passer les valeurs à l'autre couche
         for(int i = 0; i < reseau[0].length; i++)
             for(int j = 0; j < reseau[1].length; j++)
-                reseau[1][j].addInputs(reseau[0][i].computes()*weights[0][i][j]);
+                reseau[1][j].addInputs(reseau[0][i].computes()*weightsItoH[i][j]);
         
         //Exécuter les neurones du deuxième étage et passer les valeurs à l'autre couche
         for(int i = 0; i < reseau[1].length; i++)
             for(int j = 0; j < reseau[2].length; j++)
-                reseau[2][j].addInputs(reseau[1][i].computes()*weights[1][i][j]);
+                reseau[2][j].addInputs(reseau[1][i].computes()*weightsHtoO[i][j]);
         
         //Exécuter les neurones du dernier étage
-        //for(int i = 0; i < reseau[2].length; i++)
-          //  reseau[2][i].computes();
+        for(int i = 0; i < reseau[2].length; i++)
+            reseau[2][i].computes();
         
         //Trouver la position de la plus grande valeur d'output
         for(int i = 0; i < reseau[2].length; i++)
-            if(reseau[2][i].computes() > reseau[2][posMax].computes())
+            if(reseau[2][i].getOutput() > reseau[2][posMax].getOutput())
                 posMax = i;
         
         return posMax;
     }
     
-    public void train(double[][] trainingSet, double[] resultat)
+    /**
+     * Entrainer le réseau
+     * 
+     * @param trainingSet   Les valeurs de test, avec tous les exemples
+     * @param resultat      Les résultats de chaque exemple
+     */
+    public void train(double[][] trainingSet, double[] resultat) throws IllegalArgumentException
     {
-        removeAllInputs();
-        
-        for(int i = 0; i < trainingSet[0].length; i++)
-            setInputs(trainingSet[0]);
-        
-        computes();
-        
-        SGDHiddenToOutput(resultat);
-        SGDInputToHidden(resultat);
+        for(int i = 0; i < trainingSet.length; i++)
+        {
+            //Effacer les valeur existante
+            removeAllInputs();
+
+            //Set les inputs
+            setInputs(trainingSet[i]);
+
+            //Calculer la valeur
+            computes();
+
+            //Effectué l'apprentisage
+            SGDHiddenToOutput(resultat);
+            SGDInputToHidden(resultat);
+        }
     }
     
+    /**
+     * Modifier les valeur des poids entre l'hidden et le output layer
+     * 
+     * @param resultat      Les valeurs 
+     */
     public void SGDHiddenToOutput(double[] resultat)
     {
-        for(int j = 0; j < reseau[1].length; j++)
+        //Ya un fuck avec le résultat... pas la bonne valeur jpense
+        
+        double valOut;
+        double valHidden;
+        
+        for(int i = 0; i < reseau[1].length; i++)
         {
-            for(int i = 0; i < reseau[2].length; i++)
+            valHidden = reseau[1][i].getOutput();
+            for(int j = 0; j < reseau[2].length; j++)
             {
-                double valeurNeuroneOutput = reseau[2][i].getOutput();
-                double valeurNeuroneHidden = reseau[1][j].getOutput();
-                weights[1][j][i] -= trainingRate * (valeurNeuroneOutput - resultat[i]) * valeurNeuroneOutput * (1 - valeurNeuroneOutput) * valeurNeuroneHidden;
+                valOut = reseau[2][j].getOutput();
+                weightsHtoO[i][j] -= trainingRate * (valOut - resultat[j]) * valOut * (1 - valOut) * valHidden;
             }
         }
     }
     
+    /**
+     * Modifier les valeur des poids entre l'input et le hidden layer
+     * 
+     * @param resultat      Les valeurs 
+     */
     public void SGDInputToHidden(double[] resultat)
     {
+        //Ya un fuck avec le résultat... pas la bonne valeur jpense
+        
         double somme = 0;
+        double valInput;
+        double valHidden;
+        double valOut;
+                
         for(int k = 0; k < reseau[0].length; k++)
         {
-            double valInput = reseau[0][k].getOutput();
+            valInput = reseau[0][k].getOutput();
             
             for(int i = 0; i < reseau[1].length; i++)
             {
-                double valHidden = reseau[1][i].getOutput();
+                valHidden = reseau[1][i].getOutput();
                 
                 for(int j = 0; j < reseau[2].length; j++)
                 {
-                    double valOut = reseau[2][j].getOutput();
-
-                    somme += ((valOut - resultat[j]) * valOut * (1 - valOut) * weights[1][i][j]) * valHidden * (1 - valHidden) * valInput;
+                    valOut = reseau[2][j].getOutput();
+                    somme += ((valOut - resultat[j]) * valOut * (1 - valOut) * weightsHtoO[i][j]) * valHidden * (1 - valHidden) * valInput;
                 }
-                weights[0][k][i] -= trainingRate * somme;
+                weightsItoH[k][i] -= trainingRate * somme;
             }
         }
     }
