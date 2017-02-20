@@ -7,6 +7,15 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class NeuralNetwork {
+
+    private static final int INPUT = 9;
+    private static final int HIDDEN = 3;
+    private static final int OUTPUT = 2;
+    
+    private static final String fileweightsItoH = "weightsItoH";
+    private static final String fileweightsHtoO = "weightsHtoO";
+    
+    private static final double threshold = 0.75;
     
     private static double[][] weightsItoH = 
     {
@@ -90,8 +99,8 @@ public class NeuralNetwork {
     public static void main(String[] args) {
         try
         {
-            Reseau r = new Reseau(9, 3, 2, 0.001, weightsItoH, weightsHtoO);            
-            r.train(training, results);
+            Reseau r = new Reseau(INPUT, HIDDEN, OUTPUT, 0.001, threshold,  weightsItoH, weightsHtoO);            
+            //r.train(training, results);
             r.setInputs(testInput);
             System.out.println(r.computes());
         }

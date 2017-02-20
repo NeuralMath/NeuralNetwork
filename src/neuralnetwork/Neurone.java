@@ -11,14 +11,17 @@ public class Neurone {
     private double inputValue = 0;
     private double output;
     private final int position;
+    private final double threshold;
     
     /**
      * Constructeur pour les neurones sans weight (input layer)
      * 
-     * @param pos Position de la neurone dans le layer quel appartient
+     * @param pos               Position de la neurone dans le layer quel appartient
+     * @param thresholdTemp     Valeur limite d'acceptation pour la neurone
      */
-    public Neurone(int pos) {
+    public Neurone(int pos, double thresholdTemp) {
         position = pos;
+        threshold = thresholdTemp;
     }
 
     /**
@@ -35,16 +38,14 @@ public class Neurone {
      * 
      * @param input     La valeur de l'input
      */
-    public void addInputs(double input)
-    {
+    public void addInputs(double input) {
         inputValue += input;
     }
     
     /**
      * Reset l'input de la neuronne
      */
-    public void removeInputs()
-    {
+    public void removeInputs() {
         inputValue = 0;
     }
     
@@ -55,6 +56,12 @@ public class Neurone {
      */
     public double computes() {
         output = 1 / (1 + Math.exp(-inputValue));
+        
+        if(output > threshold)
+            output = 1;
+        else
+            output = 0;
+        
         return output;
     }
 }
