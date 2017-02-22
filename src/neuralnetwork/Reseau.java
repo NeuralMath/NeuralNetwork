@@ -21,14 +21,14 @@ public class Reseau {
      * 
      * @param inputLayer                        Nombre de neurons dans la première couche
      * @param hiddenLayer                       Nombre de neurons dans la deuxième couche
-     * @param outputLayer                       Nombre de neurons dans la troisième couche     
+     * @param outputLayer                       Nombre de neurons dans la troisième couche    
      * @param training                          Vitesse de l'apprentisage
-     * @param threshold                         Seuil pour les neurone
+     * @param bias                              Tableau des bias des neuronnes du 2 et 3 étages
      * @param weightsItoHTemp                   Le tableau des weight des liaison l'input layer et le hidden
      * @param weightsHtoOTemp                   Le tableau des weight des liaison le hidden layer et le output
      * @throws IllegalArgumentException     Si le tableau de weight n'a pas les bonne grandeur
      */
-    public Reseau(int inputLayer, int hiddenLayer, int outputLayer, double training, double threshold, double[][] weightsItoHTemp, double[][] weightsHtoOTemp) {
+    public Reseau(int inputLayer, int hiddenLayer, int outputLayer, double training, double[][] bias, double[][] weightsItoHTemp, double[][] weightsHtoOTemp) {
         weightsItoH = weightsItoHTemp;
         weightsHtoO = weightsHtoOTemp;
         trainingRate = training;
@@ -42,10 +42,10 @@ public class Reseau {
                     new Neurone[outputLayer]
                 };
         
-        //Création des neuronnes
-        for (Neurone[] list : reseau)
-            for (int j = 0; j < list.length; j++)
-                list[j] = new Neurone(j, threshold);
+        //Création des neuronnes avec leurs bias
+        for (int i = 0; i < reseau.length; i++)
+            for (int j = 0; j < reseau[i].length; j++)
+                reseau[i][j] = new Neurone(j, bias[i][j]);
     }
     
     /**

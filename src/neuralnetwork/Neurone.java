@@ -11,17 +11,17 @@ public class Neurone {
     private double inputValue = 0;
     private double output;
     private final int position;
-    private final double threshold;
+    private final double bias;
     
     /**
      * Constructeur pour les neurones sans weight (input layer)
      * 
      * @param pos               Position de la neurone dans le layer quel appartient
-     * @param thresholdTemp     Valeur limite d'acceptation pour la neurone
+     * @param biasTemp          Valuer du bias de la neuronne
      */
-    public Neurone(int pos, double thresholdTemp) {
+    public Neurone(int pos, double biasTemp) {
         position = pos;
-        threshold = thresholdTemp;
+        bias = biasTemp;
     }
 
     /**
@@ -55,12 +55,7 @@ public class Neurone {
      * @return La valeur resultante de la neuronne
      */
     public double computes() {
-        output = 1 / (1 + Math.exp(-inputValue));
-        
-        if(output > threshold)
-            output = 1;
-        else
-            output = 0;
+        output = 1 / (1 + Math.exp(-(inputValue-bias)));
         
         return output;
     }
