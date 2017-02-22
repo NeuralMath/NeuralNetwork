@@ -11,6 +11,7 @@ public class NeuralNetwork {
     private static final int INPUT = 9;
     private static final int HIDDEN = 3;
     private static final int OUTPUT = 2;
+    private static final double TRAININGRATE = 0.001;
     
     private static final String fileWeightsItoH = "weightsItoH.txt";
     private static final String fileWeightsHtoO = "weightsHtoO.txt";
@@ -20,11 +21,33 @@ public class NeuralNetwork {
     private static double[][] weightsHtoO;
     private static double[][] bias;
     
+    
+    private static final double[][] reslut = 
+    {
+    //   H, T 
+        {0, 1},
+        {1, 0},
+        {0, 1},
+        {1, 0}
+    };
+    
+    private static final double[][] training = 
+    {
+        {0.999, 0.989, 0.978, 0.105, 0.957, 0.097, 0.05, 0.899, 0.090},
+        {0.999, 0.105, 0.978, 0.954, 0.987, 0.975, 0.897, 0.106, 0.956},
+        {0.989, 0.999, 0.967, 0.055, 0.967, 0.111, 0.070, 0.999, 0.030},
+        {0.988, 0.15, 0.998, 0.895, 0.887, 0.985, 0.997, 0.026, 0.976}
+    };
+    
     public static void main(String[] args) {
         try
         {
             initializationVariablesNetwork();
-            Reseau r = new Reseau(INPUT, HIDDEN, OUTPUT, 0.001, bias, weightsItoH, weightsHtoO);
+            Reseau r = new Reseau(INPUT, HIDDEN, OUTPUT, TRAININGRATE, bias, weightsItoH, weightsHtoO);
+            r.train(training, reslut);
+            writeFile(fileBias, bias);
+            writeFile(fileWeightsItoH, weightsItoH);
+            writeFile(fileWeightsHtoO, weightsHtoO);
         }
         catch(IllegalArgumentException ex)
         {

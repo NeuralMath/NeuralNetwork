@@ -14,10 +14,10 @@ public class Neurone {
     private final double bias;
     
     /**
-     * Constructeur pour les neurones sans weight (input layer)
+     * Constructeur pour les neurones
      * 
      * @param pos               Position de la neurone dans le layer quel appartient
-     * @param biasTemp          Valuer du bias de la neuronne
+     * @param biasTemp          Valeur du bias de la neuronne
      */
     public Neurone(int pos, double biasTemp) {
         position = pos;

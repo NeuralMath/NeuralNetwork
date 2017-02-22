@@ -10,6 +10,7 @@ public class Reseau {
     
     private final double[][] weightsItoH;
     private final double[][] weightsHtoO;
+    private final double[][] bias;
     
     private double[] inputValues;
     private final Neurone[][] reseau;
@@ -28,9 +29,10 @@ public class Reseau {
      * @param weightsHtoOTemp                   Le tableau des weight des liaison le hidden layer et le output
      * @throws IllegalArgumentException     Si le tableau de weight n'a pas les bonne grandeur
      */
-    public Reseau(int inputLayer, int hiddenLayer, int outputLayer, double training, double[][] bias, double[][] weightsItoHTemp, double[][] weightsHtoOTemp) {
+    public Reseau(int inputLayer, int hiddenLayer, int outputLayer, double training, double[][] biasTemp, double[][] weightsItoHTemp, double[][] weightsHtoOTemp) {
         weightsItoH = weightsItoHTemp;
         weightsHtoO = weightsHtoOTemp;
+        bias = biasTemp;
         trainingRate = training;
         
         inputValues = new double[inputLayer];
@@ -104,17 +106,19 @@ public class Reseau {
      * @param trainingSet   Les valeurs de test, avec tous les exemples
      * @param resultat      Les résultats de chaque exemple
      */
-    public void train(double[][] trainingSet, double[] resultat) throws IllegalArgumentException {
-        for (double[] set : trainingSet) {
+    public void train(double[][] trainingSet, double[][] resultat) throws IllegalArgumentException {
+        for (int i = 0; i < trainingSet.length; i++) {
             //Effacer les valeur existante
             removeAllInputs();
             //Set les inputs
-            setInputs(set);
+            setInputs(trainingSet[i]);
             //Calculer la valeur
             computes();
             //Effectué l'apprentisage
-            SGDHiddenToOutput(resultat);
-            SGDInputToHidden(resultat);
+            SGDBiasOutput(inputValues);
+            SGDWeightHiddenToOutput(resultat[i]);
+            SGDBiasHidden(inputValues);
+            SGDWeightInputToHidden(resultat[i]);
         }
     }
     
@@ -123,18 +127,16 @@ public class Reseau {
      * 
      * @param resultat      Les valeurs 
      */
-    public void SGDHiddenToOutput(double[] resultat) {
-        //Ya un fuck avec le résultat... pas la bonne valeur jpense
-        
+    public void SGDWeightHiddenToOutput(double[] resultat) {
         double valOut;
         double valHidden;
         
-        for(int i = 0; i < reseau[1].length; i++)
+        for(int i = 0; i < reseau[0].length; i++)
         {
-            valHidden = reseau[1][i].getOutput();
-            for(int j = 0; j < reseau[2].length; j++)
+            valHidden = reseau[0][i].getOutput();
+            for(int j = 0; j < reseau[1].length; j++)
             {
-                valOut = reseau[2][j].getOutput();
+                valOut = reseau[1][j].getOutput();
                 weightsHtoO[i][j] -= trainingRate * (valOut - resultat[j]) * valOut * (1 - valOut) * valHidden;
             }
         }
@@ -145,29 +147,66 @@ public class Reseau {
      * 
      * @param resultat      Les valeurs 
      */
-    public void SGDInputToHidden(double[] resultat) {
-        //Ya un fuck avec le résultat... pas la bonne valeur jpense
-        
+    public void SGDWeightInputToHidden(double[] resultat) {
         double somme = 0;
         double valInput;
         double valHidden;
         double valOut;
                 
-        for(int k = 0; k < reseau[0].length; k++)
+        for(int k = 0; k < inputValues.length; k++)
         {
-            valInput = reseau[0][k].getOutput();
+            valInput = inputValues[k];
             
-            for(int i = 0; i < reseau[1].length; i++)
+            for(int i = 0; i < reseau[0].length; i++)
             {
-                valHidden = reseau[1][i].getOutput();
+                valHidden = reseau[0][i].getOutput();
                 
-                for(int j = 0; j < reseau[2].length; j++)
+                for(int j = 0; j < reseau[1].length; j++)
                 {
-                    valOut = reseau[2][j].getOutput();
+                    valOut = reseau[1][j].getOutput();
                     somme += ((valOut - resultat[j]) * valOut * (1 - valOut) * weightsHtoO[i][j]) * valHidden * (1 - valHidden) * valInput;
                 }
                 weightsItoH[k][i] -= trainingRate * somme;
             }
+        }
+    }
+    
+    
+    /**
+     * Modifier les valeur des bias de l'output layer
+     * 
+     * @param resultat      Les valeurs de résultat
+     */
+    public void SGDBiasOutput(double[] resultat) {
+        double valOut;
+        
+        for(int j = 0; j < reseau[1].length; j++)
+        {
+            valOut = reseau[1][j].getOutput();
+            bias[1][j] -= trainingRate * (valOut - resultat[j]) * valOut * (1 - valOut);
+        }
+    }
+    
+    /**
+     * Modifier les valeur des bias de le hidden layer
+     * 
+     * @param resultat      Les valeurs de résultat
+     */
+    public void SGDBiasHidden(double[] resultat) {
+        double somme = 0;
+        double valHidden;
+        double valOut;
+        
+        for(int i = 0; i < reseau[0].length; i++)
+        {
+            valHidden = reseau[0][i].getOutput();
+
+            for(int j = 0; j < reseau[1].length; j++)
+            {
+                valOut = reseau[1][j].getOutput();
+                somme += ((valOut - resultat[j]) * valOut * (1 - valOut) * weightsHtoO[i][j]) * valHidden * (1 - valHidden);
+            }
+            bias[0][i] -= trainingRate * somme;
         }
     }
 }
