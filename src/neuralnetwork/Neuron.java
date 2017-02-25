@@ -6,21 +6,18 @@ package neuralnetwork;
  * @author Marc4492
  * 10 février 2017
  */
-public class Neurone {
+public class Neuron {
     
     private double inputValue = 0;
     private double output;
-    private final int position;
     private final double bias;
     
     /**
      * Constructeur pour les neurones
      * 
-     * @param pos               Position de la neurone dans le layer quel appartient
      * @param biasTemp          Valeur du bias de la neuronne
      */
-    public Neurone(int pos, double biasTemp) {
-        position = pos;
+    public Neuron(double biasTemp) {
         bias = biasTemp;
     }
 
