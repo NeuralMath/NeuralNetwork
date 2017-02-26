@@ -56,13 +56,13 @@ public class Network {
         
         initializationVariablesNetwork();
         
-        inputValues = new double[inputLayer];
+        inputValues = new double[INPUT];
         
         //Création de la première dimmension
         reseau = new Neuron[][] 
                 {
-                    new Neuron[hiddenLayer],
-                    new Neuron[outputLayer]
+                    new Neuron[HIDDEN],
+                    new Neuron[OUTPUT]
                 };
         
         //Création des neuronnes avec leurs bias
@@ -77,24 +77,27 @@ public class Network {
      * @param input                         Le tableau de double pour les entrées
      * @throws IllegalArgumentException     S'il n'y a pas le bon nombre de données
      */
-    public void setInputs(double[] input) {
+    /*public void setInputs(double[] input) {
         removeAllInputs();
         inputValues = input;
-    }
+    }*/
     
     /**
      * Obtenir la valeur du réseau
      * 
+     * @param input                         Le tableau de double pour les entrées
      * @return La position de la neurone avec la plus haute valeur
      */
-    public int getAnwser()
+    public int getAnwser(double[] input)
     {
         int posMax = 0;
+        removeAllInputs();
+        inputValues = input;
         
         computes();
         
         //Trouver la position de la plus grande valeur d'output
-        for(int i = 0; i < reseau[1].length; i++)
+        for(int i = 1; i < reseau[1].length; i++)
             if(reseau[1][i].getOutput() > reseau[1][posMax].getOutput())
                 posMax = i;
         
@@ -118,13 +121,16 @@ public class Network {
     private void computes() {
         //Exécuter les neurones du premier étage et passer les valeurs à l'autre couche
         for(int i = 0; i < inputValues.length; i++)
-            for(int j = 0; j < reseau[1].length; j++)
+            for(int j = 0; j < reseau[0].length; j++)
                 reseau[0][j].addInputs(inputValues[i]*weightsItoH[i][j]);
+        
+        for(int i = 0; i < reseau[0].length; i++)
+            reseau[0][i].computes();
         
         //Exécuter les neurones du deuxième étage et passer les valeurs à l'autre couche
         for(int i = 0; i < reseau[0].length; i++)
             for(int j = 0; j < reseau[1].length; j++)
-                reseau[1][j].addInputs(reseau[0][i].computes()*weightsHtoO[i][j]);
+                reseau[1][j].addInputs(reseau[0][i].getOutput()*weightsHtoO[i][j]);
         
         //Exécuter les neurones du dernier étage
         for(int i = 0; i < reseau[1].length; i++)
@@ -171,7 +177,8 @@ public class Network {
     public void train(double[][] trainingSet, double[][] resultat) throws IOException {        
         for (int i = 0; i < trainingSet.length; i++) {
             //Set les inputs
-            setInputs(trainingSet[i]);
+            removeAllInputs();
+            inputValues = trainingSet[i];
             //Calculer la valeur
             computes();
             //Effectué l'apprentisage
@@ -293,15 +300,22 @@ public class Network {
     /**
      * Remettre toutes les valeurs à 1.0 et les écrire dans le fichier
      * 
-     * @throws IOException      Dans le cas d'un problème avec les fichers
+     * * @param inputLayer                        Nombre de neurons dans la première couche
+     * @param hiddenLayer                       Nombre de neurons dans la deuxième couche
+     * @param outputLayer                       Nombre de neurons dans la troisième couche
+     * @param fileWIH                           Path du fichier pour les poids entre l'input et le hidden layer
+     * @param fileWHO                           Path du fichier pour les poids entre le hidden et le output layer
+     * @param fileB                             Path du fichier pour les bias des neurones
+     * 
+     * @throws IOException                      S'il ya des problème de lecture d fichier
      */
-    public void resetDatas() throws IOException
+    public static void resetDatas(int inputLayer, int hiddenLayer, int outputLayer, String fileWIH, String fileWHO, String fileB) throws IOException
     {
-        double[][] weightIH = new double[INPUT][HIDDEN];
-        double[][] weightHO = new double[HIDDEN][OUTPUT];
+        double[][] weightIH = new double[inputLayer][hiddenLayer];
+        double[][] weightHO = new double[hiddenLayer][outputLayer];
         double[][] biasVal = new double[2][];
-        biasVal[0] = new double[HIDDEN];
-        biasVal[1] = new double[OUTPUT];
+        biasVal[0] = new double[hiddenLayer];
+        biasVal[1] = new double[outputLayer];
         
         //Affectation des variables
         for(double[] val : weightHO)
@@ -314,9 +328,9 @@ public class Network {
             Arrays.fill(val, 1.0);
         
         //Écriture dans les fichiers
-        writeFile(fileBias, biasVal);
-        writeFile(fileWeightsHtoO, weightHO);
-        writeFile(fileWeightsItoH, weightIH);
+        writeFile(fileB, biasVal);
+        writeFile(fileWHO, weightHO);
+        writeFile(fileWIH, weightIH);
     }
     
     /**
@@ -326,7 +340,7 @@ public class Network {
      * @param array             Le tableau à écrire
      * @throws IOException      S'il y a des problème d'écriture dans le fichier
      */
-    public void writeFile(String filePath, double[][] array) throws IOException
+    private static void writeFile(String filePath, double[][] array) throws IOException
     {
         //Creation du fichier s'il n'existe pas
         File file = new File(filePath);
@@ -352,7 +366,7 @@ public class Network {
      * @throws IOException                  S'il y a des problème de lecture dans le fichier ou que le fichier n'a pas les bonnes tailles. (nbs lignes/colonnes)
      * @throws NumberFormatException        Si le texte n'est pas en double
      */
-    public void readFile(String filePath, double[][] array) throws IOException, NumberFormatException
+    private static void readFile(String filePath, double[][] array) throws IOException, NumberFormatException
     {
         //Obtention du fichier
         File file = new File(filePath);

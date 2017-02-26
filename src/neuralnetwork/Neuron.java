@@ -7,7 +7,6 @@ package neuralnetwork;
  * 10 février 2017
  */
 public class Neuron {
-    
     private double inputValue = 0;
     private double output;
     private final double bias;
@@ -48,12 +47,8 @@ public class Neuron {
     
     /**
      * Calculer la valeur de l'output
-     * 
-     * @return La valeur resultante de la neuronne
      */
-    public double computes() {
+    public void computes() {
         output = 1 / (1 + Math.exp(-(inputValue-bias)));
-        
-        return output;
     }
 }
