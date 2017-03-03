@@ -23,7 +23,7 @@ public class Network {
     private double[][] weightsItoH;
     private double[][] weightsHtoO;
     
-    private double[] inputValues;
+    private final double[] inputValues;
     private final Neuron[][] reseau;
     
     private final double trainingRate;
@@ -55,7 +55,7 @@ public class Network {
         
         initializationVariablesNetwork();
         
-        //Création de la première dimmension
+        //Création des layer du réseau avec une neurone de plus dans le hidden layer pour le bias
         reseau = new Neuron[][] 
                 {
                     new Neuron[HIDDEN+1],
@@ -227,6 +227,7 @@ public class Network {
      */
     public static void resetDatas(int inputLayer, int hiddenLayer, int outputLayer, String fileWIH, String fileWHO) throws IOException
     {
+        //Reset des tableaus de weight incluant les bias
         double[][] weightIH = new double[inputLayer+1][hiddenLayer+1];
         double[][] weightHO = new double[hiddenLayer+1][outputLayer];
         

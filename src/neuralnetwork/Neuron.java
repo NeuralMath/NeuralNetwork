@@ -11,6 +11,7 @@ public class Neuron {
     
     /**
      * Constructeur pour les neurones
+     * Set l'output à 1.0 pour les neurones de bias
      */
     public Neuron() {
         output = 1.0;

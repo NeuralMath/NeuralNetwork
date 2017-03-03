@@ -6,11 +6,13 @@ package neuralnetwork;
  */
 public class Letter {
     private double[] array;
+    private double[] results;
+    
     private final double offRange;
     private final double onRange;
     private final int squareNumber;
     
-    public Letter(int pix, double off, double on, String letter)
+    public Letter(int pix, double off, double on, int letter, int output)
     {
         array = new double[pix];
         offRange = off;
@@ -20,20 +22,25 @@ public class Letter {
         for(int i = 0; i < array.length; i++)
             array[i] = OFFPix();
         
-        if(null != letter)
-            switch (letter) {
-            case "T":
-                createT();
-                break;
-            case "H":
-                createH();
-                break;
-            case "C":
-                createC();
-                break;
-            default:
-                break;
-        }
+        results = new double[output];
+        results[letter] = 1;
+        
+        switch (letter) {
+        case 0:
+            createT();
+            break;
+        case 1:
+            createH();
+            break;
+        case 2:
+            createC();
+            break;
+        case 3:
+            createO();
+            break;
+        default:
+            break;
+    }
     }
     
     private void createT()
@@ -93,6 +100,21 @@ public class Letter {
             array[i] = ONPix();
     }
     
+    private void createO()
+    {
+        for(int i = 0; i < squareNumber; i++)
+            array[i] = ONPix();
+        
+        for(int i = array.length - squareNumber; i < array.length; i++)
+            array[i] = ONPix();
+        
+        for(int i = 0; i < array.length; i += squareNumber)
+            array[i] = ONPix();
+        
+        for(int i = squareNumber-1; i < array.length; i += squareNumber)
+            array[i] = ONPix();
+    }
+    
     private double ONPix()
     {
         return onRange + Math.random() * (1 - onRange);
@@ -105,5 +127,10 @@ public class Letter {
 
     public double[] getArray() {
         return array;
+    }
+    
+    public double[] getResults()
+    {
+        return results;
     }
 }
