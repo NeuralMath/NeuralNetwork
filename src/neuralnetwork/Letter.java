@@ -5,24 +5,19 @@ package neuralnetwork;
  * @author Marc4492
  */
 public class Letter {
-    private double[] array;
-    private double[] results;
-    
-    private final double offRange;
-    private final double onRange;
+    private int[] array;
+    private int[] results;
     private final int squareNumber;
     
-    public Letter(int pix, double off, double on, int letter, int output)
+    public Letter(int pix, int letter, int output)
     {
-        array = new double[pix];
-        offRange = off;
-        onRange = on;
+        array = new int[pix];
         squareNumber = (int) Math.sqrt((double) pix);
         
         for(int i = 0; i < array.length; i++)
-            array[i] = OFFPix();
+            array[i] = 0;
         
-        results = new double[output];
+        results = new int[output];
         results[letter] = 1;
         
         switch (letter) {
@@ -46,19 +41,19 @@ public class Letter {
     private void createT()
     {
         for(int i = 0; i < squareNumber; i++)
-            array[i] = ONPix();
+            array[i] = 1;
         
         if(array.length%2 == 0)
         {
             for(int i = squareNumber/2 - 1; i < array.length; i += squareNumber)
             {
-                array[i] = ONPix();
-                array[i + 1] = ONPix();
+                array[i] = 1;
+                array[i + 1] = 1;
             }
         }
         else
             for(int i = (int) Math.floor((squareNumber)/2); i < array.length; i += squareNumber)
-                array[i] = ONPix();
+                array[i] = 1;
             
                 
     }
@@ -66,70 +61,59 @@ public class Letter {
     private void createH()
     {
         for(int i = 0; i < array.length; i += squareNumber)
-            array[i] = ONPix();
+            array[i] = 1;
         
         for(int i = squareNumber - 1; i < array.length; i += squareNumber)
-            array[i] = ONPix();
+            array[i] = 1;
         
         if(array.length%2 == 0)
         {
             int debutMiddle = squareNumber - 1;
             for(int i = debutMiddle; i < debutMiddle + squareNumber; i++)
             {
-                array[i] = ONPix();
-                array[i + squareNumber] = ONPix();
+                array[i] = 1;
+                array[i + squareNumber] = 1;
             }
         }
         else
         {
             int debutMiddle = (int) (squareNumber * Math.floor((squareNumber)/2));
             for(int i = debutMiddle; i < debutMiddle + squareNumber; i++)
-                array[i] = ONPix();
+                array[i] = 1;
         }
     }
     
     private void createC()
     {
         for(int i = 0; i < squareNumber; i++)
-            array[i] = ONPix();
+            array[i] = 1;
         
         for(int i = array.length - squareNumber; i < array.length; i++)
-            array[i] = ONPix();
+            array[i] = 1;
         
         for(int i = 0; i < array.length; i += squareNumber)
-            array[i] = ONPix();
+            array[i] = 1;
     }
     
     private void createO()
     {
         for(int i = 0; i < squareNumber; i++)
-            array[i] = ONPix();
+            array[i] = 1;
         
         for(int i = array.length - squareNumber; i < array.length; i++)
-            array[i] = ONPix();
+            array[i] = 1;
         
         for(int i = 0; i < array.length; i += squareNumber)
-            array[i] = ONPix();
+            array[i] = 1;
         
         for(int i = squareNumber-1; i < array.length; i += squareNumber)
-            array[i] = ONPix();
+            array[i] = 1;
     }
-    
-    private double ONPix()
-    {
-        return onRange + Math.random() * (1 - onRange);
-    }
-    
-    private double OFFPix()
-    {
-        return Math.random() * offRange;
-    }
-
-    public double[] getArray() {
+    public int[] getArray() {
         return array;
     }
     
-    public double[] getResults()
+    public int[] getResults()
     {
         return results;
     }

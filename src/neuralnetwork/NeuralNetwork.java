@@ -1,21 +1,21 @@
 package neuralnetwork;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class NeuralNetwork {
-    private static final double offRange = 0.4;
-    private static final double onRange = 0.6;
+   private static final int nbsData = 60000;
 
-    private static final int INPUT = 81;
-    private static final int HIDDEN = 10;
-    private static final int OUTPUT = 4;
+    private static final int INPUT = 784;
+    private static final int HIDDEN = 100;
+    private static final int OUTPUT = 10;
     private static final double TRAININGRATE = 0.005;    
     
     private static final String fileWeightsItoH = "weightsItoH.txt";
     private static final String fileWeightsHtoO = "weightsHtoO.txt";
     
-    private static final double[][] result = new double[80000][OUTPUT];
-    private static final double[][] training = new double[80000][INPUT];
+    private static final int[][] result = new int[nbsData][OUTPUT];
+    private static final int[][] trainingImage = new int[nbsData][];
     
     public static void main(String[] args) {
         
@@ -26,28 +26,33 @@ public class NeuralNetwork {
         {
             //Network.resetDatas(INPUT, HIDDEN, OUTPUT, fileWeightsItoH, fileWeightsHtoO);
             Network n = new Network(INPUT, HIDDEN, OUTPUT, TRAININGRATE, fileWeightsItoH, fileWeightsHtoO);
-            
             if(train)
             {
-                for(int i = 0; i < training.length; i++)
+                MnistManager m = new MnistManager("C:/Users/Marc4492/Downloads/train-images.idx3-ubyte", "C:/Users/Marc4492/Downloads/train-labels.idx1-ubyte");
+                for (int[] val : result)
+                    Arrays.fill(val, 0);
+                
+                for(int i = 0; i < nbsData; i++)
                 {
-                    Letter l = new Letter(INPUT, offRange, onRange, i%4, OUTPUT);
-                    training[i] = l.getArray();
-                    result[i] = l.getResults();
+                    trainingImage[i] = m.readImage();
+                    result[i][m.readLabel()] = 1;
                 }
-                n.train(training, result);
+                
+                n.train(trainingImage, result);
             }
             else
             {
+                MnistManager m = new MnistManager("C:/Users/Marc4492/Downloads/t10k-images.idx3-ubyte", "C:/Users/Marc4492/Downloads/t10k-labels.idx1-ubyte");
                 int nbsErreur = 0;
-                int nbsData = 40000;
-
-                for(int i = 0; i < nbsData; i++)
-                    if(n.getAnwser(new Letter(INPUT, offRange, onRange, i%4, OUTPUT).getArray()) != i%4)
+                int nbsDataTry = 1000;
+                
+                m.setCurrent(1);
+                
+                for(int i = 0; i < nbsDataTry; i++)
+                    if(n.getAnwser(m.readImage()) != m.readLabel())
                         nbsErreur++;
                 
-                System.out.println("Data : " + nbsData);
-                System.out.println("Réussite : " + (nbsData - nbsErreur));
+                System.out.println(nbsErreur + " / " + nbsDataTry);
             }
         }
         catch(IOException ex)

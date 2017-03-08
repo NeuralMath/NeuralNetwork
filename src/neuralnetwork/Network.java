@@ -20,10 +20,10 @@ public class Network {
     private final String fileWeightsItoH;
     private final String fileWeightsHtoO;
     
-    private double[][] weightsItoH;
-    private double[][] weightsHtoO;
+    private final double[][] weightsItoH;
+    private final double[][] weightsHtoO;
     
-    private final double[] inputValues;
+    private final int[] inputValues;
     private final Neuron[][] reseau;
     
     private final double trainingRate;
@@ -49,11 +49,17 @@ public class Network {
         fileWeightsItoH = fileWIH;
         fileWeightsHtoO = fileWHO;
         
-        inputValues = new double[INPUT+1];
+        inputValues = new int[INPUT+1];
         //Set bias commun
-        inputValues[INPUT] = 1.0;
+        inputValues[INPUT] = 1;
         
-        initializationVariablesNetwork();
+        //Creation des tableaux de weight avec les +1 pour les bias
+        weightsItoH = new double[INPUT+1][HIDDEN+1];
+        weightsHtoO = new double[HIDDEN+1][OUTPUT];
+        
+        //Read les valeurs dans les fichiers
+        readFile(fileWeightsItoH, weightsItoH);
+        readFile(fileWeightsHtoO, weightsHtoO);
         
         //Création des layer du réseau avec une neurone de plus dans le hidden layer pour le bias
         reseau = new Neuron[][] 
@@ -74,7 +80,7 @@ public class Network {
      * @param input     Le tableau de double pour les entrées
      * @return          La position de la neurone avec la plus haute valeur
      */
-    public int getAnwser(double[] input)
+    public int getAnwser(int[] input)
     {
         int posMax = 0;
 
@@ -123,24 +129,6 @@ public class Network {
     }
     
     
-    /**
-     * Initialisation des paramètres du réseau
-     * 
-     * @throws IOException      Si les fichiers ne sont pas de la bonne taille
-     */
-    private void initializationVariablesNetwork() throws IOException {        
-        //Creation des tableaux de weight avec les +1 pour les bias
-        weightsItoH = new double[INPUT+1][HIDDEN+1];
-        weightsHtoO = new double[HIDDEN+1][OUTPUT];
-        
-        //Read les valeurs dans les fichiers
-        readFile(fileWeightsItoH, weightsItoH);
-        readFile(fileWeightsHtoO, weightsHtoO);
-    }
-    
-    
-    
-    
     
     //********************* Entrainement du réseau *********************\\
     
@@ -153,58 +141,40 @@ public class Network {
      * 
      * @throws IOException      S'il y a un problème d'écriture dans un fichier
      */
-    public void train(double[][] trainingSet, double[][] resultat) throws IOException {
-        for(int i = 0; i < trainingSet.length; i++) {
+    public void train(int[][] trainingSet, int[][] resultat) throws IOException {
+        for(int a = 0; a < trainingSet.length; a++) {
             //Copier les valeurs sans touché à la valeur de bias
-            System.arraycopy(trainingSet[i], 0, inputValues, 0, INPUT);
+            System.arraycopy(trainingSet[a], 0, inputValues, 0, INPUT);
             //Calculer les valeurs
             computes();
 
             //Effectuer l'apprentisage
-            SGDWeightHiddenToOutput(resultat[i]);
-            SGDWeightInputToHidden(resultat[i]);
+            
+            //Stocastic gradient descent  HIDDEN -> OUTPUT
+            for(int i = 0; i <= HIDDEN; i++)
+                for(int j = 0; j < OUTPUT; j++)
+                    weightsHtoO[i][j] -= trainingRate * (reseau[1][j].getOutput() - resultat[a][j]) * reseau[1][j].getOutput() * (1 - reseau[1][j].getOutput()) * reseau[0][i].getOutput();
+
+            //Stocastic gradient descent  INPUT -> HIDDEN
+            for(int k = 0; k <= INPUT; k++)
+            {
+                for(int i = 0; i <= HIDDEN; i++)
+                {
+                    double sommation = 0;
+
+                    for(int j = 0; j < OUTPUT; j++)
+                        sommation += (reseau[1][j].getOutput() - resultat[a][j]) * reseau[1][j].getOutput() * (1 - reseau[1][j].getOutput()) * weightsHtoO[i][j];
+
+                    weightsItoH[k][i] -= trainingRate * sommation * reseau[0][i].getOutput() * (1-reseau[0][i].getOutput()) * inputValues[k];
+                }
+            }
         }
         
         //Enregistrement des données
         writeFile(fileWeightsItoH, weightsItoH);
         writeFile(fileWeightsHtoO, weightsHtoO);
     }
-    
-    /**
-     * Modifier les valeur des poids entre l'hidden et le output layer
-     * 
-     * @param resultat      Les valeurs voulues des neuronnes de sortie
-     */
-    private void SGDWeightHiddenToOutput(double[] resultat) {        
-        //Stocastic gradient descent
-        for(int i = 0; i <= HIDDEN; i++)
-            for(int j = 0; j < OUTPUT; j++)
-                weightsHtoO[i][j] -= trainingRate * (reseau[1][j].getOutput() - resultat[j]) * reseau[1][j].getOutput() * (1 - reseau[1][j].getOutput()) * reseau[0][i].getOutput();;
-    }
-    
-    /**
-     * Modifier les valeur des poids entre l'input et le hidden layer
-     * 
-     * @param resultat      Les valeurs voulues des neuronnes de sortie
-     */
-    private void SGDWeightInputToHidden(double[] resultat) {
-        //Stocastic gradient descent
-        for(int k = 0; k <= INPUT; k++)
-        {
-            for(int i = 0; i <= HIDDEN; i++)
-            {
-                double sommation = 0;
-
-                for(int j = 0; j < OUTPUT; j++)
-                    sommation += (reseau[1][j].getOutput() - resultat[j]) * reseau[1][j].getOutput() * (1 - reseau[1][j].getOutput()) * weightsHtoO[i][j];
-
-                weightsItoH[k][i] -= trainingRate * sommation * reseau[0][i].getOutput() * (1-reseau[0][i].getOutput()) * inputValues[k];
-            }
-        }
-    }
-    
-    
-    
+       
     
     
     
